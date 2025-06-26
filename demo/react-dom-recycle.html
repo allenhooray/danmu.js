@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello World</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.byted-static.com/danmu.js/0.6.4/browser/index.js" charset="utf-8"></script>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      video {
+        width: 100%;
+        height: 100%;
+      }
+      #DanmuContainer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useState, useRef, useEffect } = React
+
+      const useDanmu = () => {
+        const [danmu, setDanmu] = useState(null)
+        useEffect(() => {
+          const player = document.getElementById('mse')
+          const danmu = new window.DanmuJs({
+            channelSize: 12,
+            container: document.getElementById('DanmuContainer'),
+            player,
+          })
+          danmu.start()
+          danmu.on('bullet_hover', function (e) {
+            danmu.freezeComment(e.bullet.id)
+          })
+          setDanmu(danmu)
+        }, [])
+        return danmu
+      }
+
+      function MyApp() {
+        const danmu = useDanmu()
+
+        useEffect(() => {
+          if (!danmu) {
+            return
+          }
+          danmu.start()
+
+          danmu.on('bullet_hover', function (e) {
+            danmu.freezeComment(e.bullet.id)
+          })
+
+          const commentList = new Array(100).fill(0).map((_, index) => {
+            const randomDurantion = [5000, 8000, 10000, 12000, 15000, 20000][Math.floor(Math.random() * 6)]
+            const randomFontSize = [16, 18, 20, 22, 24, 26][Math.floor(Math.random() * 6)]
+            return {
+              duration: randomDurantion,
+              id: index,
+              txt: '我是弹幕' + index,
+              style: {
+                fontSize: `${randomFontSize}px`,
+              },
+            }
+          })
+          danmu.updateComments(commentList)
+        }, [danmu])
+
+        return (
+          <div>
+            <video
+              id="mse"
+              muted
+              controls
+              autoplay="true"
+              src="//s1.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4"
+              type="video/mp4"
+            >
+              your browser does not support the video tag
+            </video>
+            <div id="DanmuContainer"></div>
+          </div>
+        )
+      }
+
+      const container = document.getElementById('root')
+      const root = ReactDOM.createRoot(container)
+      root.render(<MyApp />)
+    </script>
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this section for a production-ready setup with JSX:
+      https://reactjs.org/docs/add-react-to-a-website.html#add-jsx-to-a-project
+
+      In a larger project, you can use an integrated toolchain that includes JSX instead:
+      https://reactjs.org/docs/create-a-new-react-app.html
+
+      You can also use React without JSX, in which case you can remove Babel:
+      https://reactjs.org/docs/react-without-jsx.html
+    -->
+  </body>
+</html>
